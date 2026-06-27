@@ -10,7 +10,7 @@ services:
       POSTGRES_PASSWORD: secretpassword
       POSTGRES_DB: siem_db
     ports:
-      - "5433:5432"
+      - "5432:5432"
     volumes:
       - ./init-db:/docker-entrypoint-initdb.d
     networks:
@@ -38,6 +38,25 @@ services:
     volumes:
       - ./init-es:/scripts
     entrypoint: ["sh", "/scripts/setup-es.sh"]
+    networks:
+      - siem-network
+
+  # 4. Backend Service
+  backend:
+    build: .
+    container_name: siem-backend
+    image: siem-backend-pgi
+    depends_on:
+      - rdbms
+      - elasticsearch
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - PG_CONNECTION_STRING=postgres://backend_user:secretpassword@rdbms:5432/siem_db
+      - DATABASE_URL=postgresql://backend_user:secretpassword@rdbms:5432/siem_db?schema=public
+      - ES_NODE=http://elasticsearch:9200
+    command: sh -c "npx prisma db push && node dist/src/server.js"
     networks:
       - siem-network
 
