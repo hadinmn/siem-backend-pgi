@@ -16,7 +16,9 @@ export const create = async (
     try {
         const data = await addHighlightedIp(req.body);
         res.status(201).json({ success: true, message: 'IP highlighted successfully', data });
-    } catch (err) {
+    }
+    
+    catch (err) {
         next(err);
     }
 };
@@ -34,7 +36,9 @@ export const list = async (
             meta: { total_data: data.length },
             data,
         });
-    } catch (err) {
+    }
+    
+    catch (err) {
         next(err);
     }
 };
@@ -52,7 +56,9 @@ export const update = async (
             return;
         }
         res.status(200).json({ success: true, message: 'IP updated successfully', data });
-    } catch (err) {
+    }
+    
+    catch (err) {
         next(err);
     }
 };
@@ -70,7 +76,9 @@ export const remove = async (
             return;
         }
         res.status(200).json({ success: true, message: 'IP deleted successfully', data });
-    } catch (err) {
+    }
+    
+    catch (err) {
         next(err);
     }
 };
@@ -88,7 +96,9 @@ export const activity = async (
             meta: { total_data: result.total_data },
             data: result.data,
         });
-    } catch (err) {
+    }
+    
+    catch (err) {
         next(err);
     }
 };
