@@ -1,4 +1,4 @@
-import pool from '../config/db';
+import prisma from '../config/db';
 import esClient from '../config/elasticsearch';
 import { AlertResponse, AlertQueryParams } from '../types';
 
@@ -6,21 +6,17 @@ export const getAssetIpsByFilter = async (
     department?: string,
     risk?: string
 ): Promise<string[]> => {
-    let query = 'SELECT host_identifier_local FROM internal_infrastructure_assets WHERE 1=1';
-    const params: string[] = [];
+    const assets = await prisma.internal_infrastructure_assets.findMany({
+        where: {
+            ...(department && { department_owner: department }),
+            ...(risk && { risk_level: risk }),
+        },
+        select: {
+            host_identifier_local: true,
+        },
+    });
 
-    if (department) {
-        params.push(department);
-        query += ` AND department_owner = $${params.length}`;
-    }
-
-    if (risk) {
-        params.push(risk);
-        query += ` AND risk_level = $${params.length}`;
-    }
-
-    const result = await pool.query(query, params);
-    return result.rows.map((row) => row.host_identifier_local);
+    return assets.map((a) => a.host_identifier_local);
 };
 
 export const searchAlerts = async (

@@ -1,5 +1,5 @@
 import esClient from '../config/elasticsearch';
-import pool from '../config/db';
+import prisma from '../config/db';
 
 export const getTopTargetedIps = async (): Promise<{ ip: string; count: number }[]> => {
     const result = await esClient.search({
@@ -27,11 +27,15 @@ export const getTopTargetedIps = async (): Promise<{ ip: string; count: number }
 export const getAssetsByIps = async (
     ips: string[]
 ): Promise<{ host_identifier_local: string; asset_name: string; department_owner: string }[]> => {
-    const result = await pool.query(
-        `SELECT host_identifier_local, asset_name, department_owner
-     FROM internal_infrastructure_assets
-     WHERE host_identifier_local = ANY($1)`,
-        [ips]
-    );
-    return result.rows;
+    const result = await prisma.internal_infrastructure_assets.findMany({
+        where: {
+            host_identifier_local: { in: ips },
+        },
+        select: {
+            host_identifier_local: true,
+            asset_name: true,
+            department_owner: true,
+        },
+    });
+    return result;
 };

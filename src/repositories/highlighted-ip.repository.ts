@@ -1,4 +1,4 @@
-import pool from '../config/db';
+import prisma from '../config/db';
 import esClient from '../config/elasticsearch';
 import { HighlightedIp, AlertResponse } from '../types';
 
@@ -6,19 +6,15 @@ export const createHighlightedIp = async (
     ip_address: string,
     reason?: string
 ): Promise<HighlightedIp> => {
-    const result = await pool.query(
-        `INSERT INTO highlighted_ips (ip_address, reason)
-     VALUES ($1, $2) RETURNING *`,
-        [ip_address, reason ?? null]
-    );
-    return result.rows[0];
+    return prisma.highlighted_ips.create({
+        data: { ip_address, reason },
+    });
 };
 
 export const findAllHighlightedIps = async (): Promise<HighlightedIp[]> => {
-    const result = await pool.query(
-        'SELECT * FROM highlighted_ips ORDER BY created_at DESC'
-    );
-    return result.rows;
+    return prisma.highlighted_ips.findMany({
+        orderBy: { created_at: 'desc' },
+    });
 };
 
 export const updateHighlightedIp = async (
@@ -26,31 +22,37 @@ export const updateHighlightedIp = async (
     ip_address?: string,
     reason?: string
 ): Promise<HighlightedIp | null> => {
-    const result = await pool.query(
-        `UPDATE highlighted_ips
-     SET ip_address = COALESCE($1, ip_address),
-         reason = COALESCE($2, reason),
-         updated_at = NOW()
-     WHERE id = $3
-     RETURNING *`,
-        [ip_address ?? null, reason ?? null, id]
-    );
-    return result.rows[0] ?? null;
+    try {
+        return await prisma.highlighted_ips.update({
+            where: { id },
+            data: {
+                ...(ip_address && { ip_address }),
+                ...(reason && { reason }),
+                updated_at: new Date(),
+            },
+        });
+    } catch {
+        return null;
+    }
 };
 
 export const deleteHighlightedIp = async (
     id: number
 ): Promise<HighlightedIp | null> => {
-    const result = await pool.query(
-        'DELETE FROM highlighted_ips WHERE id = $1 RETURNING *',
-        [id]
-    );
-    return result.rows[0] ?? null;
+    try {
+        return await prisma.highlighted_ips.delete({
+            where: { id },
+        });
+    } catch {
+        return null;
+    }
 };
 
 export const findHighlightedIpAddresses = async (): Promise<string[]> => {
-    const result = await pool.query('SELECT ip_address FROM highlighted_ips');
-    return result.rows.map((row) => row.ip_address);
+    const result = await prisma.highlighted_ips.findMany({
+        select: { ip_address: true },
+    });
+    return result.map((r) => r.ip_address);
 };
 
 export const searchAlertsByIps = async (
