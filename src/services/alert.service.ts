@@ -1,7 +1,8 @@
 import { getAssetIpsByFilter, searchAlerts } from '../repositories/alert.repository';
-import { AlertQueryParams, AlertResult } from '../types';
+import { AlertResult } from '../types';
+import type { AlertQueryInput } from '../validations';
 
-export const getAlertLogs = async (params: AlertQueryParams): Promise<AlertResult> => {
+export const getAlertLogs = async (params: AlertQueryInput): Promise<AlertResult> => {
     const { department, risk, page = 1, limit = 20 } = params;
 
     const ips = await getAssetIpsByFilter(department, risk);

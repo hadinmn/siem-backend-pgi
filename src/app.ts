@@ -4,6 +4,7 @@ import healthRouter from './routes/health.routes';
 import alertRouter from './routes/alert.routes';
 import dashboardRouter from './routes/dashboard.routes';
 import highlightedIpRouter from './routes/highlighted-ip.routes';
+import { errorHandler } from './middlewares/error.middleware';
 
 dotenv.config();
 
@@ -14,5 +15,7 @@ app.use('/health', healthRouter);
 app.use('/alerts', alertRouter);
 app.use('/dashboard', dashboardRouter);
 app.use('/highlighted-ips', highlightedIpRouter);
+
+app.use(errorHandler);
 
 export default app;

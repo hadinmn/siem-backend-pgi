@@ -1,6 +1,7 @@
 import prisma from '../config/db';
 import esClient from '../config/elasticsearch';
-import { AlertResponse, AlertQueryParams } from '../types';
+import { AlertResponse } from '../types';
+import type { AlertQueryInput } from '../validations';
 
 export const getAssetIpsByFilter = async (
     department?: string,
@@ -21,7 +22,7 @@ export const getAssetIpsByFilter = async (
 
 export const searchAlerts = async (
     ips: string[],
-    params: AlertQueryParams
+    params: AlertQueryInput
 ): Promise<{ total: number; data: AlertResponse[] }> => {
     const {
         severity,

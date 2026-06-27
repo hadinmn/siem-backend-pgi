@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import {
     addHighlightedIp,
     listHighlightedIps,
@@ -6,28 +6,26 @@ import {
     removeHighlightedIp,
     getHighlightedIpActivity,
 } from '../services/highlighted-ip.service';
+import { AppError } from '../middlewares/error.middleware';
 
-export const create = async (req: Request, res: Response): Promise<void> => {
+export const create = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+): Promise<void> => {
     try {
-        const { ip_address, reason } = req.body;
-        if (!ip_address) {
-            res.status(400).json({ success: false, message: 'ip_address is required' });
-            return;
-        }
-        const data = await addHighlightedIp({ ip_address, reason });
+        const data = await addHighlightedIp(req.body);
         res.status(201).json({ success: true, message: 'IP highlighted successfully', data });
-
-    } catch (err: any) {
-        if (err.code === '23505') {
-            res.status(409).json({ success: false, message: 'IP address already highlighted' });
-            return;
-        }
-        console.error('Error adding highlighted IP:', (err as Error).message);
-        res.status(500).json({ success: false, message: 'Internal server error' });
+    } catch (err) {
+        next(err);
     }
 };
 
-export const list = async (req: Request, res: Response): Promise<void> => {
+export const list = async (
+    _: Request,
+    res: Response,
+    next: NextFunction
+): Promise<void> => {
     try {
         const data = await listHighlightedIps();
         res.status(200).json({
@@ -36,47 +34,52 @@ export const list = async (req: Request, res: Response): Promise<void> => {
             meta: { total_data: data.length },
             data,
         });
-
     } catch (err) {
-        console.error('Error listing highlighted IPs:', (err as Error).message);
-        res.status(500).json({ success: false, message: 'Internal server error' });
+        next(err);
     }
 };
 
-export const update = async (req: Request, res: Response): Promise<void> => {
+export const update = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+): Promise<void> => {
     try {
         const id = Number(req.params.id);
-        const { ip_address, reason } = req.body;
-        const data = await editHighlightedIp(id, { ip_address, reason });
+        const data = await editHighlightedIp(id, req.body);
         if (!data) {
-            res.status(404).json({ success: false, message: 'IP not found' });
+            next(new AppError('IP not found', 404));
             return;
         }
         res.status(200).json({ success: true, message: 'IP updated successfully', data });
-
     } catch (err) {
-        console.error('Error updating highlighted IP:', (err as Error).message);
-        res.status(500).json({ success: false, message: 'Internal server error' });
+        next(err);
     }
 };
 
-export const remove = async (req: Request, res: Response): Promise<void> => {
+export const remove = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+): Promise<void> => {
     try {
         const id = Number(req.params.id);
         const data = await removeHighlightedIp(id);
         if (!data) {
-            res.status(404).json({ success: false, message: 'IP not found' });
+            next(new AppError('IP not found', 404));
             return;
         }
         res.status(200).json({ success: true, message: 'IP deleted successfully', data });
-
     } catch (err) {
-        console.error('Error deleting highlighted IP:', (err as Error).message);
-        res.status(500).json({ success: false, message: 'Internal server error' });
+        next(err);
     }
 };
 
-export const activity = async (req: Request, res: Response): Promise<void> => {
+export const activity = async (
+    _: Request,
+    res: Response,
+    next: NextFunction
+): Promise<void> => {
     try {
         const result = await getHighlightedIpActivity();
         res.status(200).json({
@@ -85,9 +88,7 @@ export const activity = async (req: Request, res: Response): Promise<void> => {
             meta: { total_data: result.total_data },
             data: result.data,
         });
-
     } catch (err) {
-        console.error('Error fetching activity:', (err as Error).message);
-        res.status(500).json({ success: false, message: 'Internal server error' });
+        next(err);
     }
 };
