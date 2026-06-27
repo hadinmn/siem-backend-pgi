@@ -23,7 +23,6 @@ Default `.env` values:
 
 ```
 PORT=3000
-PG_CONNECTION_STRING=postgres://backend_user:secretpassword@localhost:5432/siem_db
 ES_NODE=http://localhost:9200
 DATABASE_URL=postgresql://backend_user:secretpassword@localhost:5432/siem_db?schema=public
 ```
@@ -148,6 +147,5 @@ rdbms:
 And update `.env`:
 
 ```
-PG_CONNECTION_STRING=postgres://backend_user:secretpassword@localhost:5433/siem_db
 DATABASE_URL=postgresql://backend_user:secretpassword@localhost:5433/siem_db?schema=public
 ```

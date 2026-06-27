@@ -53,8 +53,7 @@ services:
       - "3000:3000"
     environment:
       - PORT=3000
-      - PG_CONNECTION_STRING=postgres://backend_user:secretpassword@rdbms:5432/siem_db
-      - DATABASE_URL=postgresql://backend_user:secretpassword@rdbms:5432/siem_db?schema=public
+      - DATABASE_URL=postgresql://backend_user:secretpassword@rdbms:5432/siem_db
       - ES_NODE=http://elasticsearch:9200
     command: sh -c "npx prisma db push && node dist/src/server.js"
     networks:
